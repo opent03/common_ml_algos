@@ -3,7 +3,7 @@ Basic linear regression, optimization using analytical method or gradient descen
 Tested on sklearn's simplified boston dataset
 """
 from sklearn.datasets import load_boston
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import pandas as pd
 import math
@@ -99,8 +99,8 @@ Y = bos['PRICE']
 #Now, split into train-test
 X_train, X_test, y_train, y_test = train_test_split(X,Y, test_size = 0.20, random_state = 1)
 #Some preprocessing
-X_train_scaled = pd.DataFrame(preprocessing.scale(X_train))
-y_train_scaled = pd.DataFrame(preprocessing.scale(y_train))
+#X_train_scaled = pd.DataFrame(preprocessing.scale(X_train))
+#y_train_scaled = pd.DataFrame(preprocessing.scale(y_train))
 #print(X_train_scaled)
 
 
