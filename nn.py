@@ -27,8 +27,7 @@ class Neural_Network:
         return 1 * (vector > 0)
 
     def logistic(self, z):
-
-            return 1 / (1 + np.exp(-z))
+        return 1 / (1 + np.exp(-z))
 
     def dlogistic(self, z):
         return np.multiply(self.logistic(z), (1-self.logistic(z)))
@@ -43,12 +42,12 @@ class Neural_Network:
         self.hid_size = 20
         self.out_size = 10
 
+        # Initialize the essentials
         self.W1 = np.random.uniform(low=-bounds, high=bounds, size=(self.in_size, self.hid_size))
         self.W2 = np.random.uniform(low=-bounds, high=bounds, size=(self.hid_size, self.out_size))
-
-        # initialize bias terms
         self.b1 = np.zeros((self.hid_size, 1))
         self.b2 = np.zeros((self.out_size, 1))
+
         # 4ward prop, cost, and backprop, a decent number of times
         if not skip_train:
             for i in range(epochs):
@@ -57,38 +56,27 @@ class Neural_Network:
                 self.cost1 = self.cost(y_train)
                 dW2, dW1, db2, db1 = self.back_prop(X_train, y_train)
 
-                # Store old stuff
-                self.oldW2 = self.W2
-                self.oldW1 = self.W1
-                self.oldb1 = self.b1
-                self.oldb2 = self.b2
                 # Update
                 self.W2 = self.W2 - alpha*dW2
                 self.W1 = self.W1 - alpha*dW1
                 self.b2 = self.b2 - alpha*db2
                 self.b1 = self.b1 - alpha*db1
 
-
                 print("epochs: " + str(i+1) + " --- "+ "cost: " + "{0:5f}".format(self.cost1))
-
-    def save_params(self):
-        pass
 
     def forward_prop(self, X):
         #Standard stuff
         self.Z1 = np.matmul(X, self.W1)
-
         # add the bias manually, cuz I suck at numpy
         for i in range(self.Z1.shape[0]):
             self.Z1[i] = np.add(self.Z1[i], self.b1.T)
 
         self.A2 = self.logistic(self.Z1)
-
         self.Z2 = np.matmul(self.A2,self.W2)
         for i in range(self.Z2.shape[0]):
             self.Z2[i] = np.add(self.Z2[i], self.b2.T)
 
-        # Softmax
+        # Softmax, again cuz I couldn't figure out a vectorized implementation
         A3 = self.Z2
         for i in range(self.Z2.shape[0]):
             A3[i] = self.softmax(A3[i])
@@ -96,7 +84,6 @@ class Neural_Network:
 
     def back_prop(self,X, Y):
         # dLdW2
-
         dLdA3 = (self.hyp - Y)
         dA3dZ2 = self.hyp * (1 - self.hyp)   # derivative of softmax, kind of
         delta2 = np.multiply(dLdA3, dA3dZ2)  # delta2 is (A3-y) times S'(Z2)
@@ -107,9 +94,10 @@ class Neural_Network:
         delta1 = np.multiply(dLdA2, self.dlogistic(self.Z1))
         dLdW1 = np.matmul(X.T, delta1)
 
+        # bias
         db2 = (1. / X.shape[0]) * np.sum(dA3dZ2, axis=0, keepdims=True)
         db1 = (1. / X.shape[0]) * np.sum(delta1, axis=0, keepdims=True)
-        return dLdW2, dLdW1, db2.T, db1.T
+        return dLdW2, dLdW1, db2.T, db1.T  # Don't ask why biases are transposed. Just don't.
 
     def cost(self, Y):
         # Quadratic loss
@@ -117,7 +105,7 @@ class Neural_Network:
 
     def predict(self, X):
         hyp = self.forward_prop(X)
-        # the zero one thingy, convert from a probability thing to a class
+        # the zero one thingy, convert from a probability distr thing to something that resembles y_test
         for i in range(hyp.shape[0]):
             max = np.amax(hyp[i])
             for j in range(hyp.shape[1]):
@@ -135,7 +123,7 @@ class Neural_Network:
         return float(good) / Y.shape[0]
 
 """
-MAIN STUFF BEGINS HEREp
+MAIN STUFF BEGINS HERE
 """
 # Loads the data
 def load_data():
@@ -145,7 +133,7 @@ def load_data():
 
     X, Y = training_data[0], training_data[1]
 
-    # Some preprocessing. Convert stuff into format that's easier to work with
+    # Minimal preprocessing. Convert stuff into format that's easier to work with
     X = np.array([np.reshape(element, (784,)) for element in X])
     Y = np.array([np.reshape(vectorize(element), (10,)) for element in Y])
 
@@ -167,12 +155,12 @@ neural_net = Neural_Network()
 
 # Training
 start = time.time()
-neural_net.fit(X_train, y_train, alpha=6e-4, epochs=200, bounds=0.1, skip_train=False)
+neural_net.fit(X_train, y_train, alpha=6e-4, epochs=300, bounds=0.1, skip_train=False)
 end = time.time()
 
 # Prediction and evaluation
 prediction = neural_net.predict(X_test)
 eval = neural_net.evaluate(y_test, prediction)
+print()
 print("your accuracy on test scores was: " + str(eval * 100) + "%")
-
 print("Model took " + "{0:.2f}".format(end-start) + "s to finish")
