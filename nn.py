@@ -10,8 +10,8 @@ path = os.getcwd() + "/mnist.pkl.gz"
 import time
 """
 Train a neural network on MNIST data (LeCun et al.) with 1 hidden layer
-Input layer: 28x28 = 784 neurons (+ 1 bias)
-Hidden layer: 20 neurons (+ 1 bias)
+Input layer: 28x28 = 784 neurons ( + 1 bias)
+Hidden layer: 20 neurons ( + 1 bias)
 Output layer : 10 neurons corresponding to 0-9 digits
 """
 class Neural_Network:
@@ -36,7 +36,7 @@ class Neural_Network:
         return np.exp(z)/np.sum(np.exp(z), axis=0)
 
     # Vectorized implementation of for/back prop in an Andrew Ng~ish style
-    def fit(self, X_train, y_train, alpha, epochs,bounds, skip_train):
+    def fit(self, X_train, y_train, alpha, epochs,bounds, skip_train, beta):
         m_samples = X_train.shape[0]
         self.in_size = X_train.shape[1]
         self.hid_size = 20
@@ -48,6 +48,12 @@ class Neural_Network:
         self.b1 = np.zeros((self.hid_size, 1))
         self.b2 = np.zeros((self.out_size, 1))
 
+        # Momentum terms
+        self.VdW1 = np.zeros(shape=self.W1.shape)
+        self.VdW2 = np.zeros(shape=self.W2.shape)
+        self.Vdb1 = np.zeros(shape=self.b1.shape)
+        self.Vdb2 = np.zeros(shape=self.b2.shape)
+
         # 4ward prop, cost, and backprop, a decent number of times
         if not skip_train:
             for i in range(epochs):
@@ -56,13 +62,19 @@ class Neural_Network:
                 self.cost1 = self.cost(y_train)
                 dW2, dW1, db2, db1 = self.back_prop(X_train, y_train)
 
-                # Update
-                self.W2 = self.W2 - alpha*dW2
-                self.W1 = self.W1 - alpha*dW1
-                self.b2 = self.b2 - alpha*db2
-                self.b1 = self.b1 - alpha*db1
+                # Momentum
+                self.VdW1 = beta * self.VdW1 + (1-beta)*dW1
+                self.VdW2 = beta * self.VdW2 + (1-beta)*dW2
+                self.Vdb1 = beta * self.Vdb1 + (1-beta)*db1
+                self.Vdb2 = beta * self.Vdb2 + (1-beta)*db2
 
-                print("epochs: " + str(i+1) + " --- "+ "cost: " + "{0:5f}".format(self.cost1))
+                #Update
+                self.W2 = self.W2 - alpha*self.VdW2
+                self.W1 = self.W1 - alpha*self.VdW1
+                self.b2 = self.b2 - alpha*self.Vdb2
+                self.b1 = self.b1 - alpha*self.Vdb1
+
+                print("epochs: " + str(i+1) + " --- " + "cost: " + "{0:5f}".format(self.cost1))
 
     def forward_prop(self, X):
         #Standard stuff
@@ -155,7 +167,7 @@ neural_net = Neural_Network()
 
 # Training
 start = time.time()
-neural_net.fit(X_train, y_train, alpha=6e-4, epochs=300, bounds=0.1, skip_train=False)
+neural_net.fit(X_train, y_train, alpha=5e-3, epochs=400, bounds=0.05, skip_train=False, beta=0.9)
 end = time.time()
 
 # Prediction and evaluation
