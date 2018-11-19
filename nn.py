@@ -10,8 +10,8 @@ path = os.getcwd() + "/mnist.pkl.gz"
 import time
 """
 Train a neural network on MNIST data (LeCun et al.) with 1 hidden layer
-Input layer: 28x28 neurons
-Hidden layer: 20 neurons 
+Input layer: 28x28 = 784 neurons (+ 1 bias)
+Hidden layer: 20 neurons (+ 1 bias)
 Output layer : 10 neurons corresponding to 0-9 digits
 """
 class Neural_Network:
