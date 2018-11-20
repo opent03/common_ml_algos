@@ -10,9 +10,11 @@ Trained on sklearn-modified cancer dataset (and does a surprisingly decent job).
 # Neural networks
 nn.py: Trained on MNIST, layers 784-20-10. Achieved ~ 94% accuracy at around 400 epochs. It runs surprisingly quickly, if your processor is not an intel pentium or anything below. For the actual maths, email me. 
 The mnist.pkl.gz was borrowed from https://www.kaggle.com/pablotab/mnistpklgz. 
-UPDATE: Added momentum for bgd. By observation, accuracy on test data peaks at around 93%-94% due to the nature of the model. Lowering the costs faster by momentum bgd only causes the model to overfit.
 
 
 nn_3layers.py: Trained on MNIST also, structure 784-10-10-10. Unsurprisingly worse than the 2 layer one training with the same #epochs because converges slower. Implements momentum, currently working on implementing nesterov. 
+
+
+UPDATE: Added momentum for bgd. By observation, accuracy on test data peaks at around 93%-94% due to the nature of the model. Lowering the costs faster by momentum bgd only causes the model to overfit. Switched to relu, Xavier init, and lr exp decay.
 
 
