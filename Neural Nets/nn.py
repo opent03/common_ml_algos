@@ -21,10 +21,20 @@ class Neural_Network:
 
 
     def relu(self, vector):
-        return vector * (vector > 0)
+        # return vector * (vector > 0)
+        return np.where(vector > 0, vector, vector * 0.01)
 
-    def drelu(self, vector):
+    def drelu(self, vector, alpha=.01):
+        """
+        for i in range(vector.shape[0]):
+            for j in range(vector.shape[1]):
+                if vector[i][j] < 0:
+                    vector[i][j] = 0.01
+                else:
+                    vector[i][j] = 1
+                    """
         return 1 * (vector > 0)
+        # return vector
 
     def logistic(self, z):
         return 1 / (1 + np.exp(-z))
@@ -36,15 +46,15 @@ class Neural_Network:
         return np.exp(z)/np.sum(np.exp(z), axis=0)
 
     # Vectorized implementation of for/back prop in an Andrew Ng~ish style
-    def fit(self, X_train, y_train, alpha, epochs,bounds, skip_train, beta):
+    def fit(self, X_train, y_train, alpha, epochs, skip_train, beta):
         m_samples = X_train.shape[0]
         self.in_size = X_train.shape[1]
         self.hid_size = 20
         self.out_size = 10
 
-        # Initialize the essentials
-        self.W1 = np.random.uniform(low=-bounds, high=bounds, size=(self.in_size, self.hid_size))
-        self.W2 = np.random.uniform(low=-bounds, high=bounds, size=(self.hid_size, self.out_size))
+        # Initialize the essentials, Xavier init
+        self.W1 = 2/self.in_size * np.random.randn(self.in_size, self.hid_size)
+        self.W2 = 2/self.hid_size * np.random.randn(self.hid_size, self.out_size)
         self.b1 = np.zeros((self.hid_size, 1))
         self.b2 = np.zeros((self.out_size, 1))
 
@@ -83,7 +93,8 @@ class Neural_Network:
         for i in range(self.Z1.shape[0]):
             self.Z1[i] = np.add(self.Z1[i], self.b1.T)
 
-        self.A2 = self.logistic(self.Z1)
+        # self.A2 = self.logistic(self.Z1)
+        self.A2 = self.relu(self.Z1)
         self.Z2 = np.matmul(self.A2,self.W2)
         for i in range(self.Z2.shape[0]):
             self.Z2[i] = np.add(self.Z2[i], self.b2.T)
@@ -103,7 +114,7 @@ class Neural_Network:
 
         #dLdW1
         dLdA2 = np.matmul(delta2, self.W2.T)
-        delta1 = np.multiply(dLdA2, self.dlogistic(self.Z1))
+        delta1 = np.multiply(dLdA2, self.drelu(self.Z1))
         dLdW1 = np.matmul(X.T, delta1)
 
         # bias
@@ -160,19 +171,22 @@ def vectorize(label):
 
 
 X, Y = load_data()
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=1)
-
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=1)
+X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, test_size=0.5)
 # Instantiates a neural net object
 neural_net = Neural_Network()
 
 # Training
 start = time.time()
-neural_net.fit(X_train, y_train, alpha=5e-3, epochs=400, bounds=0.05, skip_train=False, beta=0.9)
+neural_net.fit(X_train, y_train, alpha=5e-4, epochs=100, skip_train=False, beta=0.9)
 end = time.time()
 
 # Prediction and evaluation
 prediction = neural_net.predict(X_test)
+validation = neural_net.predict(X_val)
 eval = neural_net.evaluate(y_test, prediction)
+eval_val = neural_net.evaluate(y_val, validation)
 print()
-print("your accuracy on test scores was: " + str(eval * 100) + "%")
+print("your accuracy on test set was: " + str(eval * 100) + "%")
+print("your accuracy on validation set was: " + str(eval_val * 100) + "%")
 print("Model took " + "{0:.2f}".format(end-start) + "s to finish")
