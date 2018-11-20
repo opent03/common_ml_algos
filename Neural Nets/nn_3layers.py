@@ -23,10 +23,22 @@ class Neural_Network:
 
 
     def relu(self, vector):
-        return vector * (vector > 0)
+        # return vector * (vector > 0)
+        return np.where(vector > 0, vector, vector * 0.01)
 
-    def drelu(self, vector):
-        return 1 * (vector > 0)
+    def drelu(self, vector, alpha=.01):
+        for i in range(vector.shape[0]):
+            for j in range(vector.shape[1]):
+                if vector[i][j] < 0:
+                    vector[i][j] = 0.01
+                else:
+                    vector[i][j] = 1
+        #return 1 * (vector > 0)
+        return vector
+
+            # return alpha if x < 0 else 1
+
+        #return np.array([1 if i >= 0 else alpha for i in vector])
 
     def logistic(self, z):
         return 1 / (1 + np.exp(-z))
@@ -38,17 +50,17 @@ class Neural_Network:
         return np.exp(z)/np.sum(np.exp(z), axis=0)
 
     # Vectorized implementation of for/back prop in an Andrew Ng~ish style
-    def fit(self, X_train, y_train, alpha, epochs,bounds, skip_train, beta):
+    def fit(self, X_train, y_train, alpha, epochs, skip_train, beta):
         m_samples = X_train.shape[0]
         self.in_size = X_train.shape[1]
-        self.hid1_size = 10
-        self.hid2_size = 10
+        self.hid1_size = 16
+        self.hid2_size = 16
         self.out_size = 10
 
         # Initialize the essentials
-        self.W1 = np.random.uniform(low=-bounds, high=bounds, size=(self.in_size, self.hid1_size))
-        self.W2 = np.random.uniform(low=-bounds, high=bounds, size=(self.hid1_size, self.hid2_size))
-        self.W3 = np.random.uniform(low=-bounds, high=bounds, size=(self.hid2_size, self.out_size))
+        self.W1 = 2/self.in_size * np.random.randn(self.in_size, self.hid1_size)
+        self.W2 = 2/self.hid1_size * np.random.randn(self.hid1_size, self.hid2_size)
+        self.W3 = 2/self.hid2_size * np.random.randn(self.hid2_size, self.out_size)
         self.b1 = np.zeros((self.hid1_size, 1))
         self.b2 = np.zeros((self.hid2_size, 1))
         self.b3 = np.zeros((self.out_size, 1))
@@ -60,7 +72,7 @@ class Neural_Network:
         self.Vdb1 = np.zeros(shape=self.b1.shape)
         self.Vdb2 = np.zeros(shape=self.b2.shape)
         self.Vdb3 = np.zeros(shape=self.b3.shape)
-
+        alpha_init = alpha
         # 4ward prop, cost, and backprop, a decent number of times
         if not skip_train:
             for i in range(epochs):
@@ -68,6 +80,9 @@ class Neural_Network:
                 self.cost1 = self.cost(y_train)
                 dW3, dW2, dW1, db3, db2, db1 = self.back_prop(X_train, y_train)
 
+                # Alpha decay, lmaoo sounds so physics-y
+                alpha = np.power(0.995, i/2) * alpha_init
+                print("alpha now: " + str(alpha))
                 # Momentum
                 self.VdW1 = beta * self.VdW1 + (1-beta)*dW1
                 self.VdW2 = beta * self.VdW2 + (1-beta)*dW2
@@ -95,13 +110,15 @@ class Neural_Network:
         # add the bias manually, cuz I suck at numpy
         for i in range(self.Z1.shape[0]):
             self.Z1[i] = np.add(self.Z1[i], self.b1.T)
-        self.A2 = self.logistic(self.Z1)
+        # self.A2 = self.logistic(self.Z1)
+        self.A2 = self.relu(self.Z1)
 
         # Activation 3
         self.Z2 = np.matmul(self.A2,self.W2)
         for i in range(self.Z2.shape[0]):
             self.Z2[i] = np.add(self.Z2[i], self.b2.T)
-        self.A3 = self.logistic(self.Z2)
+        # self.A3 = self.logistic(self.Z2)
+        self.A3 = self.relu(self.Z2)
 
         # Activation 4
         self.Z3 = np.matmul(self.A3, self.W3)
@@ -119,12 +136,14 @@ class Neural_Network:
 
         #dLdW2
         dLdA3 = np.matmul(delta3, self.W3.T)
-        delta2 = np.multiply(dLdA3, self.dlogistic(self.Z2))
+        # delta2 = np.multiply(dLdA3, self.dlogistic(self.Z2))
+        delta2 = np.multiply(dLdA3, self.drelu(self.Z2))
         dLdW2 = np.matmul(self.A2.T, delta2)
 
         # dLdW1
         dLdA2 = np.matmul(delta2, self.W2.T)
-        delta1 = np.multiply(dLdA2, self.dlogistic(self.Z1))
+        # delta1 = np.multiply(dLdA2, self.dlogistic(self.Z1))
+        delta1 = np.multiply(dLdA2, self.drelu(self.Z1))
         dLdW1 = np.matmul(X.T, delta1)
 
         # bias
@@ -186,10 +205,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_
 
 # Instantiates a neural net object
 neural_net = Neural_Network()
-epochs = 500
+epochs = 300
 # Training
 start = time.time()
-costs = neural_net.fit(X_train, y_train, alpha=2e-3, epochs=epochs, bounds=0.1, skip_train=False, beta=0.95)
+costs = neural_net.fit(X_train, y_train, alpha=1e-4, epochs=epochs, skip_train=False, beta=0.95)
 end = time.time()
 
 # Prediction and evaluation
