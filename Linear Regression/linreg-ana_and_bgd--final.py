@@ -21,6 +21,7 @@ class LinReg:
     #parameters
     theta = None;
     #predicted = None;
+    costs = []
 
 
     def __init__(self):
@@ -34,17 +35,18 @@ class LinReg:
         #print(self.cost(array=self.theta, m_samples=m_samples, X_train=X_train, y_train=y_train))
 
     #Batch gradient descent fit
-    def gd_fit(self, X_train, y_train, alpha, threshold, lmbda):
+    def gd_fit(self, X_train, y_train, alpha, threshold, lmbda, beta):
         m_samples = X_train.shape[0]
         n_features = X_train.shape[1]
 
         #initialize theta
-        self.theta = np.random.uniform(size=(n_features,))
+        self.theta = np.zeros(n_features,)
 
         #Main part, gradient descent
         cost1 = self.cost(self.theta, m_samples, X_train, y_train)
         xpartial = self.partial(m_samples, self.theta, X_train,y_train)
         print("x partial is " + str(xpartial))
+        Vtheta = np.zeros(xpartial.shape)
         self.theta = self.theta*(1-alpha*lmbda/m_samples) - alpha*xpartial
         cost2 = self.cost(self.theta, m_samples, X_train, y_train)
         epochs = 0
@@ -53,7 +55,10 @@ class LinReg:
         while cost1-cost2 > threshold:
             print("cost is " + str(cost1) + " and distance to next is " + str(cost1 - cost2))
             #With regularization
-            self.theta = self.theta*(1-alpha*lmbda/m_samples) - alpha * self.partial(m_samples, self.theta, X_train, y_train)
+
+            gradient = self.partial(m_samples, self.theta, X_train, y_train)
+            Vtheta = beta * Vtheta + (1-beta)*gradient
+            self.theta = self.theta*(1-alpha*lmbda/m_samples) - alpha * Vtheta
             cost1 = cost2
             cost2 = self.cost(self.theta, m_samples, X_train, y_train)
             epochs += 1
@@ -63,7 +68,10 @@ class LinReg:
         sum = 0
         for k in range(0,m_samples):
             sum += (np.dot(X_train.iloc[k], array.T)-y_train.iloc[k])**2
-        return float(sum * (1/2/m_samples))
+
+        sum = float(sum * 1/2/m_samples)
+        self.costs.append(sum)
+        return sum
 
     def partial(self, m_samples, theta, X_train, y_train):
         vectorsum = [];
@@ -108,8 +116,7 @@ linreg = LinReg()
 
 #Scaling turned out to be garbage, so lets just do it with none of that scaling
 #linreg.ana_fit(X_train, y_train)
-#linreg.gd_fit(X_train, y_train, alpha=0.000001, threshold=0.015)
-linreg.gd_fit(X_train, y_train, alpha=.000002, threshold=0.001, lmbda = 0)
+linreg.gd_fit(X_train, y_train, alpha=6e-7, threshold=0.001, lmbda = 0, beta=0.6)
 prediction = linreg.predict(X_test)
 #print(prediction)
 
