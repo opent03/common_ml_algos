@@ -8,7 +8,7 @@ Train on sklearn-modified boston dataset. Implements quadratic loss, batch gradi
 Trained on sklearn-modified cancer dataset (and does a surprisingly decent job). Implements batch gradient descent on max likelihood cost function.
 
 # Neural networks
-nn.py: Trained on MNIST, layers 784-20-10. Achieved ~ 94% accuracy at around 400 epochs. It runs surprisingly quickly, if your processor is not an intel pentium or anything below. For the actual maths, email me. 
+nn.py: Trained on MNIST, layers 784-20-10. Achieved ~ 94% accuracy at around 100 epochs. It runs surprisingly quickly, if your processor is not an intel pentium or anything below. For the actual maths, email me. 
 The mnist.pkl.gz was borrowed from https://www.kaggle.com/pablotab/mnistpklgz. 
 
 run with python3 nn.py --dir mnist.pkl.gz
