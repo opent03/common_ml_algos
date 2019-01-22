@@ -209,8 +209,7 @@ def vectorize(label):
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="This script detects faces from web cam input, "
-                                                 "and estimates age and gender for the detected faces.",
+    parser = argparse.ArgumentParser(description=" ",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--dir", type=str, default=None,
                         help="path to data in gs")
