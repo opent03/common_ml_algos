@@ -21,4 +21,4 @@ UPDATE: Added momentum for bgd. By observation, accuracy on test data peaks at a
 
 
 # the extra jupyter notebook i uploaded most recently
-Takes a meme approach to classifying mnist by using umap+tsne features and xgboost. ~98%.
+Takes an unorthodox approach to classifying mnist by using umap+tsne features and xgboost. ~98%.
