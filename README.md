@@ -1,3 +1,6 @@
+# the extra jupyter notebook i uploaded most recently
+Unorthodox approach to classifying mnist by using umap+tsne features and xgboost. ~98%.
+
 # Some ml algos
 This repository contains custom implementations of some learning algorithms in Python3. Datasets tested on taken from sklearn.datasets.
 
@@ -20,5 +23,3 @@ nn_3layers.py: Trained on MNIST also, structure 784-10-10-10. Unsurprisingly wor
 UPDATE: Added momentum for bgd. By observation, accuracy on test data peaks at around 93%-94% due to the nature of the model. Lowering the costs faster by momentum bgd only causes the model to overfit. Switched to relu, Xavier init, and lr exp decay.
 
 
-# the extra jupyter notebook i uploaded most recently
-Takes an unorthodox approach to classifying mnist by using umap+tsne features and xgboost. ~98%.
